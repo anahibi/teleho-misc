@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>テレホ鯖</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 18px;
+            line-height: 1.5;
+        }
+        b#telehodai-bold {
+            font-weight: bold;
+            font-size: 20px;
+            line-height: 1;
+        }
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #2E2F31;
+  }
+
+  h1, p {
+    color: #f5f5f5;
+  }
+}
+    </style>
+</head>
+<body>
+    <h1>テレホ鯖 閉鎖中</h1>
+    <p>次のテレホタイムまで: <b id="telehodai-bold"></b></p>
+    <p><img src="https://media.204.jp/files/1f80d4ef-39b3-4df4-a54d-fad4e6add315.ico"></img></p>
+</body>
+</html>
+
+  <script>
+    const telebold = document.querySelector("#telehodai-bold")
+const current_time = new Date((new Date()).toUTCString())
+
+const teleUpdate = () => {
+    if (
+      14 <= current_time.getUTCHours()
+      && current_time.getUTCHours() <= 22
+    ) {
+      return 0
+    }
+    const telehodai_time_from = new Date(current_time.toUTCString())
+    
+    telehodai_time_from.setUTCHours(14, 0, 0, 0)
+    if (telehodai_time_from < current_time) {
+        telehodai_time_from.setUTCDate(telehodai_time_from.getUTCDate() + 1)
+    }
+    
+    const seconds = Math.trunc((telehodai_time_from.getTime() - Date.now())/1000)
+    const left = [
+        ["時間", Math.trunc(seconds / 3600)],
+      ["分", Math.trunc((seconds%3600) / 60)],
+      ["秒", Math.trunc(seconds%60)],
+    ]
+    telebold.innerText = left.reduce((a,c) => a.concat(c[1].toString().padStart(2, "0")).concat(c[0]), "")
+    return seconds
+}
+seconds = teleUpdate()
+const handler = setInterval(teleUpdate, 1000)
+
+// エラーを吐いたりとかしたときのデバッグ用 / 10秒で更新を止める
+// setTimeout(() => {clearInterval(handler)}, 10000)
+
+const teleReload = () => {
+        telebold.innerText = "ﾍﾟﾆｭﾌﾟﾋﾟﾘｭﾘｭﾘｭﾐﾋﾟﾋﾟｭﾎﾟｨﾎﾟﾋﾟﾘｨ (遷移します)"
+  clearInterval(handler)
+  setTimeout(() => { location.reload() }, 3000)
+}
+
+if (seconds <= 0) {
+        teleReload()
+} else {
+  const reloadHandler = setTimeout(teleReload, seconds*1000)
+}
+  </script>
+</body>
+</html>

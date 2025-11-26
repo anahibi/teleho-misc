@@ -1,0 +1,74 @@
+services:
+  tunnel:
+    restart: always
+    image: cloudflare/cloudflared
+    command: tunnel --no-autoupdate run
+    profiles:
+      - cf
+    env_file:
+      - .env
+    networks:
+      - internal_network
+
+  nginx:
+    image: openresty/openresty:latest
+    container_name: nginx
+    environment:
+      TZ: Asia/Tokyo
+    profiles:
+      - proxy
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/html:/usr/local/openresty/nginx/html/:ro
+    restart: unless-stopped
+    networks:
+      - internal_network
+
+  mi:
+    image: misskey/misskey:${MISSKEY_TAG}
+    env_file: .env_update
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./misskey/config.yml:/misskey/.config/default.yml:ro
+      - misskey-files:/misskey/files
+    restart: unless-stopped
+    networks:
+      - internal_network
+
+  # TODO: Run pgtune and ALTER SYSTEM.
+  db:
+    image: groonga/pgroonga:4.0.4-alpine-18
+    env_file:
+      - .env
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"
+      interval: 5s
+      retries: 20
+    restart: unless-stopped
+    networks:
+      - internal_network
+
+  redis:
+    restart: unless-stopped
+    image: redis:8-alpine
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}",]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: "redis-cli ping"
+      interval: 5s
+      retries: 20
+    networks:
+      - internal_network
+
+volumes:
+  postgres-data:
+  redis-data:
+  misskey-files:
+
+networks:
+  internal_network:

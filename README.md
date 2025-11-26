@@ -1,7 +1,7 @@
-# misskey-docker-compose
+# teleho-misc
 
 Misskey(テレホ鯖)と必要なコンポーネントをDockerコンテナで動かすためのスクリプト群です。  
-Misskey、Postgresql(PGroonga)、Redis、Nginx、CloudflareTunnelを使います。  
+Misskey、Postgresql(PGroonga)、Redis、Nginx(OpenResty)、CloudflareTunnelを使います。  
 Misskeyのバージョンアップスクリプトもあります。  
 
 ## 設定ファイル作成
